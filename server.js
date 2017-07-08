@@ -79,8 +79,7 @@ app.post('/unregister', function(req, res) {
 
 // Send an alert to all subscribers
 app.post('/sendAlert', function(req, res) {
-  var payload = req.body.payload; // TODO not used yet
-  cnt = cnt + 1
+  var payload = req.body.payload; // TODO not used yet  
   console.log("Sending notifications to " + subscriptions.length + " subscribers.")
   subscriptions.forEach(sendNotification);
   res.type('js').send('{"success":true}');
