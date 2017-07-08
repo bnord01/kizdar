@@ -1,0 +1,24 @@
+{
+  "name": "kizdar",
+  "description": "Kizomba Radar",
+  "main": "server.js",
+  "authors": [
+    "Benedikt Nordhoff (bnord01@gmail.com)"
+  ],
+  "license": "MIT",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.7"
+  }
+}
