@@ -73,6 +73,21 @@ function register(endpoint, key, authSecret) {
     })
 }
 
+function sendNotification(subscription, msg) {
+    webPush.sendNotification({
+        endpoint: subscription.endpoint,
+        keys: {
+            p256dh: subscription.key,
+            auth: subscription.authSecret
+        }
+    }, msg).then(function() {
+        console.log('Push Application Server - Notification sent to ' + endpoint);
+    }).catch(function() {
+        console.log('ERROR in sending Notification, endpoint removed ' + endpoint);
+        unregister(endpoint)
+    });
+}
+
 app.use(bodyParser.json());
 
 app.use(function setHomepageCanonical(req, res, next) {
@@ -105,23 +120,6 @@ if (!process.env.GCM_API_KEY) {
     webPush.setGCMAPIKey(process.env.GCM_API_KEY);
 }
 
-// Send notification to the push service. Remove the endpoint from the
-// `subscriptions` array if the  push service responds with an error.
-// Subscription has been cancelled or expired.
-function sendNotification(subscription, msg) {
-    webPush.sendNotification({
-        endpoint: subscription.endpoint,
-        keys: {
-            p256dh: subscription.key,
-            auth: subscription.authSecret
-        }
-    }, msg).then(function() {
-        console.log('Push Application Server - Notification sent to ' + endpoint);
-    }).catch(function() {
-        console.log('ERROR in sending Notification, endpoint removed ' + endpoint);
-        unregister(endpoint)
-    });
-}
 
 // Register a subscription
 app.post('/register', function(req, res) {
@@ -143,8 +141,10 @@ app.post('/unregister', function(req, res) {
 // Send an alert to all subscribers
 app.post('/sendAlert', function(req, res) {
     var payload = "There will be Kizomba!";
-    console.log("Sending notifications to " + subscriptions.length + " subscribers.")
-    subscriptions.then(subs => subs.forEach(sub => sendNotification(sub, payload)));
+    subscriptions.then(subs => {
+        console.log("Sending notifications to " + subs.length + " subscribers.")
+        subs.forEach(sub => sendNotification(sub, payload))
+    });
     res.type('js').send('{"success":true}');
 });
 
