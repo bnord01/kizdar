@@ -16,8 +16,9 @@
     "express": "^4.13.3",
     "glob": "^7.0.0",
     "request": "^2.64.0",
-    "swig": "^1.4.2",
-    "web-push": "^3.2.2"
+    "web-push": "^3.2.2",
+    "redis": "^2.7.1",
+    "bluebird": "^3.5.0"
   },
   "engines": {
     "node": "4"

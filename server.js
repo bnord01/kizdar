@@ -1,9 +1,29 @@
+'use strict';
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var glob = require('glob');
 var path = require('path');
 var fs = require('fs');
 var app = express();
+
+var redis = require('redis');
+var Promise = require("bluebird");
+Promise.promisifyAll(redis.RedisClient.prototype);
+Promise.promisifyAll(redis.Multi.prototype);
+
+var client = redis.createClient(process.env.REDIS_URL || "redis://redis:6379");
+
+// Array of all subscriptions, will be filled asynchronously
+var subscriptions = []
+
+// Asynchronously load subscriptions from redis
+client.smembersAsync("subscriptions").then(subs => {
+	for(let sub of subs) {
+		subscriptions.push(sub);
+		console.log('Loaded subscription from redis: ' + sub)
+	}
+});
 
 app.use(bodyParser.json());
 
@@ -27,9 +47,7 @@ app.use(function setServiceWorkerHeader(req, res, next) {
 // `web-push` is a library which makes sending notifications a very
 // simple process.
 var webPush = require('web-push');
-// Global array collecting all active endpoints. In real world
-// application one would use a database here.
-var subscriptions = [];
+
 
 // Setting the Google Cloud Messaging API Key.
 if (!process.env.GCM_API_KEY) {
@@ -61,8 +79,9 @@ function isSubscribed(endpoint) {
 app.post('/register', function(req, res) {
 var endpoint = req.body.endpoint;
   if (!isSubscribed(endpoint)) {
-    console.log('Subscription registered ' + endpoint);
+    console.log('Subscription registered: ' + endpoint);
     subscriptions.push(endpoint);
+	client.sadd("subscriptions",endpoint);
   }
   res.type('js').send('{"success":true}');
 });
@@ -71,15 +90,16 @@ var endpoint = req.body.endpoint;
 app.post('/unregister', function(req, res) {
   var endpoint = req.body.endpoint;
   if (isSubscribed(endpoint)) {
-    console.log('Subscription unregistered ' + endpoint);
+    console.log('Subscription unregistered: ' + endpoint);
     subscriptions.splice(subscriptions.indexOf(endpoint), 1);
+	client.srem("subscriptions",endpoint);
   }
   res.type('js').send('{"success":true}');
 });
 
 // Send an alert to all subscribers
 app.post('/sendAlert', function(req, res) {
-  var payload = req.body.payload; // TODO not used yet  
+  var payload = req.body.payload; // TODO not used yet
   console.log("Sending notifications to " + subscriptions.length + " subscribers.")
   subscriptions.forEach(sendNotification);
   res.type('js').send('{"success":true}');
