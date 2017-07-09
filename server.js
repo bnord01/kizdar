@@ -51,7 +51,7 @@ function unregister(endpoint) {
 }
 
 function register(endpoint, key, authSecret) {
-    returnsubscriptions.then(subs => {
+    return subscriptions.then(subs => {
         var sub = subs.find(s => s.endpoint == endpoint)
         if (sub) {
             console.log('Subscription updated: ' + endpoint);
