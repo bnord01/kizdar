@@ -36,6 +36,15 @@ function subscribe() {
   navigator.serviceWorker.ready.then(function(registration) {
     return registration.pushManager.subscribe({ userVisibleOnly: true });
   }).then(function(subscription) {
+    // Retrieve the user's public key.
+    var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+    var key = rawKey ?
+        btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) :
+        '';
+    var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+    var authSecret = rawAuthSecret ?
+               btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) :
+               '';
     console.log('Subscribed', subscription.endpoint);
     return fetch('register', {
       method: 'post',
@@ -43,7 +52,9 @@ function subscribe() {
         'Content-type': 'application/json'
       },
       body: JSON.stringify({
-        endpoint: subscription.endpoint
+        endpoint: subscription.endpoint,
+        key: key,
+        authSecret: authSecret
       })
     });
   }).then(setUnsubscribeButton);

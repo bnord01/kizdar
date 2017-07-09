@@ -18,14 +18,25 @@ self.addEventListener('pushsubscriptionchange', function(event) {
   event.waitUntil(
     self.registration.pushManager.subscribe({ userVisibleOnly: true })
     .then(function(subscription) {
-      console.log('Subscribed after expiration', subscription.endpoint);
+      // Retrieve the user's public key.
+      var rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+      var key = rawKey ?
+          btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) :
+          '';
+      var rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+      var authSecret = rawAuthSecret ?
+                 btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) :
+                 '';
+      console.log('Subscribed after expiration ', subscription.endpoint);
       return fetch('register', {
         method: 'post',
         headers: {
           'Content-type': 'application/json'
         },
         body: JSON.stringify({
-          endpoint: subscription.endpoint
+          endpoint: subscription.endpoint,
+          key: key,
+          authSecret: authSecret
         })
       });
     })
