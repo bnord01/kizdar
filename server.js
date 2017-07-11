@@ -2,20 +2,32 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var glob = require('glob');
-var path = require('path');
-var fs = require('fs');
 var app = express();
+app.use(bodyParser.json());
 
+//moment with timezone support
+var moment = require('moment-timezone');
+
+// redis
 var redis = require('redis');
-var Promise = require("bluebird");
+var Promise = require('bluebird');
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
-
 var client = redis.createClient(process.env.REDIS_URL || "redis://redis:6379");
 
+// Web push library
+var webPush = require('web-push');
+// Setting the Google Cloud Messaging API Key.
+if (!process.env.GCM_API_KEY) {
+    console.error('ERROR no GCM_API_KEY environment variable set');
+} else {
+    webPush.setGCMAPIKey(process.env.GCM_API_KEY);
+}
+
+// Functionality
+
 // promise of subscriptions of the form {endpoint,key,authSecret}
-var subscriptions = client.smembersAsync("subscriptions").then(epts => {
+var subscriptions = client.smembersAsync('subscriptions').then(epts => {
     var promises = []
     var subs = []
     for (let endpoint of epts) {
@@ -29,7 +41,7 @@ var subscriptions = client.smembersAsync("subscriptions").then(epts => {
                     authSecret: kas[1]
                 }
                 subs.push(sub);
-                console.log('Loaded subscription from redis: ' + sub)
+                console.log('Loaded subscription from redis: ' + sub.endpoint)
             }))
     }
     return Promise.all(promises).then(() => subs)
@@ -81,14 +93,19 @@ function sendNotification(subscription, msg) {
             auth: subscription.authSecret
         }
     }, msg).then(function() {
-        console.log('Push Application Server - Notification sent to ' + endpoint);
+        console.log('Notification sent to ' + subscription.endpoint);
     }).catch(function() {
-        console.log('ERROR in sending Notification, endpoint removed ' + endpoint);
-        unregister(endpoint)
+        console.log('ERROR in sending Notification, removing endpoint ' + subscription.endpoint);
+        unregister(subscription.endpoint)
     });
 }
 
-app.use(bodyParser.json());
+function timestamp() {
+    return moment().tz('Europe/Berlin').format('LTS')
+}
+
+
+// Setting up express
 
 app.use(function setHomepageCanonical(req, res, next) {
     // Better for canonical URL, "index.html" is ugly
@@ -107,20 +124,6 @@ app.use(function setServiceWorkerHeader(req, res, next) {
     next();
 });
 
-// `web-push` is a library which makes sending notifications a very
-// simple process.
-var webPush = require('web-push');
-
-
-// Setting the Google Cloud Messaging API Key.
-if (!process.env.GCM_API_KEY) {
-    console.error('If you want Chrome to work, you need to set the ' +
-        'GCM_API_KEY environment variable to your GCM API key.');
-} else {
-    webPush.setGCMAPIKey(process.env.GCM_API_KEY);
-}
-
-
 // Register a subscription
 app.post('/register', function(req, res) {
     var endpoint = req.body.endpoint;
@@ -128,8 +131,6 @@ app.post('/register', function(req, res) {
     var authSecret = req.body.authSecret;
     register(endpoint, key, authSecret).then(() => res.type('js').send('{"success":true}'))
 });
-
-
 
 // Unregister a subscription by removing it from the `subscriptions` array
 app.post('/unregister', function(req, res) {
@@ -140,9 +141,10 @@ app.post('/unregister', function(req, res) {
 
 // Send an alert to all subscribers
 app.post('/sendAlert', function(req, res) {
-    var payload = "There will be Kizomba!";
+    var payload = req.body.payload ? req.body.payload : 'Generic Kizomba Alert!'
+    payload = `[${timestamp()}] ${payload}`
     subscriptions.then(subs => {
-        console.log("Sending notifications to " + subs.length + " subscribers.")
+        console.log(`Sending notifications to ${subs.length} subscribers.`)
         subs.forEach(sub => sendNotification(sub, payload))
     });
     res.type('js').send('{"success":true}');

@@ -10,15 +10,15 @@
   "author": "Benedikt Nordhoff (bnord01@gmail.com)",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.5.0",
     "body-parser": "^1.14.1",
     "bower": "^1.8.0",
     "es6-promisify": "^5.0.0",
     "express": "^4.13.3",
-    "glob": "^7.0.0",
-    "request": "^2.64.0",
-    "web-push": "^3.2.2",
+    "moment-timezone": "^0.5.13",
     "redis": "^2.7.1",
-    "bluebird": "^3.5.0"
+    "request": "^2.64.0",
+    "web-push": "^3.2.2"
   },
   "engines": {
     "node": "4"

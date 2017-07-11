@@ -5,7 +5,8 @@ self.addEventListener('push', function(event) {
 
   event.waitUntil(self.registration.showNotification('Kizomba Alert!', {
     body: payload,
-    icon: 'lovekiz.png'
+    icon: 'lovekiz.png',
+    vibrate: [1500, 500, 1500]
   }));
 });
 

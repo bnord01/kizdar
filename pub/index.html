@@ -1,26 +1,38 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset='utf-8'>
-  <title>Kizomba alert!</title>
-  <meta name='viewport' content='width=device-width, initial-scale=1'>
 
-  <!--  Add support for Chrome in the demo by adding a web manifest -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+<head>
+    <meta charset='utf-8'>
+    <title>Kizomba alert!</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+
+    <!--  Old Chrome versions require the manifest with the sender id -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
 
 
 </head>
-<body>
-<div class="container">
-  <h3>Subscribe to Kizomba alerts:</h3>
-  <a class='btn btn-lg btn-primary' id='subscriptionButton' disabled=true></a>
 
-  <h3>Send a Kizomba alert to all subscribers.</h3>
-  <a class='btn btn-lg btn-warning' id='alertButton'>KIZOMBA!!!</a>
-</div>
-  <script src='./index.js'></script>
-  <script src="bower_components/jquery/dist/jquery.js"></script>
-  <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+<body>
+    <div class="container">
+        <h3>Send a Kizomba alert to ALL subscribers:</h3>
+        <p>
+            <button class='btn btn-lg btn-danger' onclick='sendAlert("KIZOMBA Now!")'>KIZOMBA Now!</button>
+            <button class='btn btn-lg btn-warning' onclick='sendAlert("Ciabatta is playing!")'>Ciabatta is playing!</button>
+        </p>
+        <p>
+            <form class="form-inline">
+                <label class="sr-only" for="customMsgInput">Message</label>
+                <input type="text" class="form-control input-lg" id="customMsgInput" placeholder="KIZ announced at ...">
+                <button type="button" class="btn btn-primary btn-lg" onclick="customAlert()">Custom Alert</button>
+            </form>
+        </p>
+        <h3>Un/Subscribe to future Kizomba alerts:</h3>
+        <button class='btn btn-lg btn-primary' id='subscriptionButton' disabled=true>Loading ...</button>
+    </div>
+    <script src='./index.js'></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
 </body>
+
 </html>
