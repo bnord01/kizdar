@@ -18,6 +18,7 @@
     "moment-timezone": "^0.5.13",
     "redis": "^2.7.1",
     "request": "^2.64.0",
+    "validator": "^8.0.0",
     "web-push": "^3.2.2"
   },
   "engines": {

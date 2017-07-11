@@ -7,6 +7,10 @@ app.use(bodyParser.json());
 
 //moment with timezone support
 var moment = require('moment-timezone');
+moment.locale('de');
+
+// validator to sanitize payload data
+var validator = require('validator');
 
 // redis
 var redis = require('redis');
@@ -142,7 +146,7 @@ app.post('/unregister', function(req, res) {
 // Send an alert to all subscribers
 app.post('/sendAlert', function(req, res) {
     var payload = req.body.payload ? req.body.payload : 'Generic Kizomba Alert!'
-    payload = `[${timestamp()}] ${payload}`
+    payload = `[${timestamp()}] ${validator.escape(payload+'')}`
     subscriptions.then(subs => {
         console.log(`Sending notifications to ${subs.length} subscribers.`)
         subs.forEach(sub => sendNotification(sub, payload))
