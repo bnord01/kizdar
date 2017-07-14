@@ -9,9 +9,6 @@ app.use(bodyParser.json());
 var moment = require('moment-timezone');
 moment.locale('de');
 
-// validator to sanitize payload data
-var validator = require('validator');
-
 // redis
 var redis = require('redis');
 var Promise = require('bluebird');
@@ -146,7 +143,7 @@ app.post('/unregister', function(req, res) {
 // Send an alert to all subscribers
 app.post('/sendAlert', function(req, res) {
     var payload = req.body.payload ? req.body.payload : 'Generic Kizomba Alert!'
-    payload = `[${timestamp()}] ${validator.escape(payload+'')}`
+    payload = `[${timestamp()}] ${payload}`
     subscriptions.then(subs => {
         console.log(`Sending notifications to ${subs.length} subscribers.`)
         console.log(`Message: ${payload}`)
