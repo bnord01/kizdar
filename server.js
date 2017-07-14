@@ -149,6 +149,7 @@ app.post('/sendAlert', function(req, res) {
     payload = `[${timestamp()}] ${validator.escape(payload+'')}`
     subscriptions.then(subs => {
         console.log(`Sending notifications to ${subs.length} subscribers.`)
+        console.log(`Message: ${payload}`)
         subs.forEach(sub => sendNotification(sub, payload))
     });
     res.type('js').send('{"success":true}');
